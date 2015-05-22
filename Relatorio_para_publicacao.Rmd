@@ -1,0 +1,55 @@
+---
+title: "Exploring the NOAA storm database"
+author: "Ebberth Lopes de Paula"
+date: "Friday, May 22, 2015"
+output: html_document
+subtitle: "An Analysis Report of Economic and Health by Severe Weather Events"
+---
+
+
+
+##*Synopsis*
+
+The basic goal of this analysis is to explore the NOAA Storm Database.
+The focus will be identify which types of events have greatest consequences in economic and in population health.
+For this purpose, will be used the [Storm Database](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2) from U.S. National Oceanic and Atmospheric Administration's (NOAA).
+
+The brief conclusion is that Tornado accounts for most deaths and injuries across America, whereas flood causes the most severe economic consequences.
+
+##*Data Processing*
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+#Load arquive
+url = "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
+arq = "repdata-data-StormData.csv.bz2"
+if (!file.exists(arq)==TRUE) {download.file(url,arq)}
+
+data <- read.csv(bzfile(arq))
+data <- tbl_df(data)
+head(data,3)
+```
+XXXXXXXXXX
+XXXXXXXXXX
+XXXXXXXXXX
+XXXXXXXXXX
+XXXXXXXXXX
+XXXXXXXXXX
+XXXXXXXXXX
+XXXXXXXXXX
+
+
+##*Results*
+
+XXXXXXXXXX
+XXXXXXXXXX
+XXXXXXXXXX
+XXXXXXXXXX
+XXXXXXXXXX
+XXXXXXXXXX
+XXXXXXXXXX
+XXXXXXXXXX
+

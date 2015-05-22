@@ -1,0 +1,158 @@
+---
+title: "Exploring the NOAA storm database"
+author: "Ebberth Lopes de Paula"
+date: "Friday, May 22, 2015"
+output: html_document
+subtitle: "An Analysis Report of Economic and Health by Severe Weather Events"
+---
+
+##*Synopsis*
+
+The basic goal of this analysis is to explore the NOAA Storm Database.
+The focus will be identify which types of events have greatest consequences in economic and in population health.
+For this purpose, will be used the [Storm Database](https:\\396qusza40orc.cloudfront.net\repdata%2Fdata%2FStormData.csv.bz2) from U.S. National Oceanic and Atmospheric Administration's (NOAA).
+
+The brief conclusion is that Tornado accounts for most deaths and injuries across America, whereas flood causes the most severe economic consequences.
+
+##*Data Processing*
+
+The code below is used to download and read the data.
+```{r, warning=FALSE, cache=TRUE}
+library(dplyr)
+library(ggplot2)
+
+#Load arquive
+url = "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
+arq = "repdata-data-StormData.csv.bz2"
+if (!file.exists(arq)==TRUE) {download.file(url,arq)}
+data <- read.csv(bzfile(arq))
+data <- tbl_df(data)
+
+# Keeping in 'data' only the necessary information to goal
+data <- select(data, EVTYPE,FATALITIES,INJURIES,PROPDMG,PROPDMGEXP,CROPDMG,CROPDMGEXP)
+
+```
+
+Adjusts are necessary in the values to make comparison between the observations. 
+```{r, warning=FALSE, cache=TRUE}
+#Estimated amount of damage to property by observation
+data <- within(data, {
+    PROPDMG_CALC <- NA
+    PROPDMG_CALC[PROPDMGEXP == "B"] <- PROPDMG*10^9
+    PROPDMG_CALC[PROPDMGEXP == "M" | PROPDMGEXP == "m"] <- PROPDMG*10^6
+    PROPDMG_CALC[PROPDMGEXP == "K"] <- PROPDMG*10^3
+    PROPDMG_CALC[PROPDMGEXP == "H" | PROPDMGEXP == "h"] <- PROPDMG*10^2
+    PROPDMG_CALC[is.na(PROPDMG_CALC)] <- PROPDMG
+    })
+
+
+#Estimated amount of damage to crops by observation
+data <- within(data, {
+    CROPDMG_CALC <- NA
+    CROPDMG_CALC[CROPDMGEXP == "B"] <- CROPDMG*10^9
+    CROPDMG_CALC[CROPDMGEXP == "M" | CROPDMGEXP == "m"] <- CROPDMG*10^6
+    CROPDMG_CALC[CROPDMGEXP == "K"] <- CROPDMG*10^3
+    CROPDMG_CALC[CROPDMGEXP == "H" | CROPDMGEXP == "h"] <- CROPDMG*10^2
+    CROPDMG_CALC[is.na(CROPDMG_CALC)] <- CROPDMG
+    })
+```
+
+Below we can see the necessary data to answer the questions:
+
+* Across the United States, which types of events are most harmful with respect to population health?
+
+* Across the United States, which types of events have the greatest economic consequences?
+
+```{r, warning=FALSE, cache=TRUE}
+
+head(data,10)
+```
+
+For our analysis, the data events was summarised in 4 ways:  
+* Top 10 by Fatality (total)    
+* Top 10 by Injuries (total)  
+* Top 10 by damage in properties (total)  
+* Top 10 by damage in crops (total)  
+
+```{r, warning=FALSE, cache=TRUE}
+### TOP 10 Events (summary)
+
+## by Fatality (total)
+TOP_Fatal <- data %>%
+  group_by(EVTYPE) %>%
+  summarise(Fatalities = sum(FATALITIES)) %>%
+  filter(Fatalities > 0) %>%
+  arrange(desc(Fatalities))
+TOP_Fatal <- TOP_Fatal[1:10,]
+
+## by Injuries (total)
+TOP_Injur <- data %>%
+  group_by(EVTYPE) %>%
+  summarise(Injuries = sum(INJURIES)) %>%
+  filter(Injuries > 0) %>%
+  arrange(desc(Injuries))
+TOP_Injur <- TOP_Injur[1:10,]
+
+## by damage in properties (total)
+TOP_DMGPROP <- data %>%
+  group_by(EVTYPE) %>%
+  summarise(Prop_DMG_Value = sum(PROPDMG_CALC)) %>%
+  filter(Prop_DMG_Value > 0) %>%
+  arrange(desc(Prop_DMG_Value))
+TOP_DMGPROP <- TOP_DMGPROP[1:10,]
+
+## by damage in crops (total)
+TOP_DMGCROP <- data %>%
+  group_by(EVTYPE) %>%
+  summarise(Crop_DMG_Value = sum(CROPDMG_CALC)) %>%
+  filter(Crop_DMG_Value > 0) %>%
+  arrange(desc(Crop_DMG_Value))
+TOP_DMGCROP <- TOP_DMGCROP[1:10,]
+```
+
+##*Results*
+
+The graphics below show the TOP 10 events that are most harmful with respect to population health. In the left we can see those who are more fatal and, in the right, those that cause most injuries.
+```{r, warning=FALSE,cache=TRUE}
+par(mfrow = c(1, 2),
+    mar = c(12,2,2,1),
+    mgp = c(2, 1, 0),
+    cex = 0.8,
+    font= 1
+    ) 
+barplot(TOP_Fatal$Fatalities, las = 3,
+        names.arg = TOP_Fatal$EVTYPE,
+        main = "Top 10 Highest Fatalities", 
+        ylab = "number of fatalities",
+        col = "blue"
+        )
+barplot(TOP_Injur$Injuries,
+        las = 3,
+        names.arg = TOP_Injur$EVTYPE,
+        main = "Top 10 Highest Injuries", 
+        ylab = "number of injuries",
+        col = "blue"
+        )
+```
+
+The graphics below show the TOP 10 events that have the greatest economic consequences. In the left we can see those who cause the most damage to properties and, in the right, those that cause greater losses to crops.
+```{r, warning=FALSE,cache=TRUE}
+par(mfrow = c(1, 2),
+    mar = c(12,2,2,1),
+    mgp = c(3, 1, 0),
+    cex = 0.8,
+    font= 1
+    ) 
+barplot(TOP_DMGPROP$Prop_DMG_Value, las = 3,
+        names.arg = TOP_DMGPROP$EVTYPE,
+        main = "Top 10 by damage in properties", 
+        ylab = "number of fatalities",
+        col = "blue"
+        )
+barplot(TOP_DMGCROP$Crop_DMG_Value, las = 3,
+        names.arg = TOP_DMGCROP$EVTYPE,
+        main = "Top 10 by damage in crops", 
+        ylab = "number of injuries",
+        col = "blue"
+        )
+```

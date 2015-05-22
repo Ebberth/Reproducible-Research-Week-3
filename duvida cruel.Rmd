@@ -1,0 +1,8 @@
+## by Fatality (mean by Year)
+TOP_Fatal_Y <- data %>%
+  group_by(EVTYPE, sec21 = Year>2000) %>%
+  summarise(Fatalities = as.numeric(mean(FATALITIES))) %>%
+  filter(sec21 == TRUE) %>%
+  arrange(desc(Fatalities))
+TOP_Fatal_Y <- TOP_Fatal_Y[1:10,]
+TOP_Fatal_Y
